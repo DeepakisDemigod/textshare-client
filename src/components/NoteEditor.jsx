@@ -10,7 +10,7 @@ import {
   Share,
   FloppyDisk,
   CloudCheck,
-  CloudSlash,
+  CloudSlash
 } from 'phosphor-react';
 
 const AUTOSAVE_INTERVAL = 10000; // 10 seconds for autosave
@@ -19,7 +19,7 @@ const NoteEditor = ({ isDarkMode }) => {
   const { noteUrl } = useParams();
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
-  const socket = io('http://localhost:5000');
+  const socket = io('https://textshare-server.onrender.com');
   const autosaveTimer = useRef(null);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const NoteEditor = ({ isDarkMode }) => {
     socket.emit('join-room', noteUrl);
 
     // Receive updates
-    socket.on('receive-update', (updatedContent) => {
+    socket.on('receive-update', updatedContent => {
       setContent(updatedContent);
     });
 
@@ -40,7 +40,7 @@ const NoteEditor = ({ isDarkMode }) => {
     const fetchNote = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/notes/${noteUrl}`
+          `https://textshare-server.onrender.com/api/notes/${noteUrl}`
         );
         setContent(response.data.content || '');
       } catch (error) {
@@ -54,8 +54,8 @@ const NoteEditor = ({ isDarkMode }) => {
     const autosave = async () => {
       try {
         setSaving(true);
-        await axios.post(`http://localhost:5000/api/notes/${noteUrl}`, {
-          content,
+        await axios.post(`https://textshare-server.onrender.com/api/notes/${noteUrl}`, {
+          content
         });
         console.log('Note autosaved!');
       } catch (error) {
@@ -75,8 +75,8 @@ const NoteEditor = ({ isDarkMode }) => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await axios.post(`http://localhost:5000/api/notes/${noteUrl}`, {
-        content,
+      await axios.post(`https://textshare-server.onrender.com/api/notes/${noteUrl}`, {
+        content
       });
     } catch (error) {
       console.error('Error saving note:', error);
@@ -102,19 +102,25 @@ const NoteEditor = ({ isDarkMode }) => {
       }`}
     >
       {/* Header */}
-      <header className="w-full px-6 py-4 flex justify-between items-center bg-opacity-80 backdrop-blur-md">
-        <h1 className="text-2xl font-bold">
-          <span className="text-blue-500">Text</span>Share
+      <header className='w-full px-6 py-4 flex justify-between items-center bg-opacity-80 backdrop-blur-md'>
+        <h1 className='text-2xl font-bold'>
+          <span className='text-blue-500'>Text</span>Share
         </h1>
-        <div className="text-sm flex items-center gap-2">
+        <div className='text-sm flex items-center gap-2'>
           {saving ? (
             <>
-              <CloudSlash size={24} className="text-yellow-500" />
+              <CloudSlash
+                size={24}
+                className='text-yellow-500'
+              />
               Saving...
             </>
           ) : (
             <>
-              <CloudCheck size={24} className="text-green-500" />
+              <CloudCheck
+                size={24}
+                className='text-green-500'
+              />
               All changes saved.
             </>
           )}
@@ -122,8 +128,8 @@ const NoteEditor = ({ isDarkMode }) => {
       </header>
 
       {/* Main Editor */}
-      <main className="flex-1 flex flex-col px-6 py-4">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+      <main className='flex-1 flex flex-col px-6 py-4'>
+        <div className='flex flex-col md:flex-row justify-between items-center mb-6'>
           <button
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
               isDarkMode
@@ -134,7 +140,7 @@ const NoteEditor = ({ isDarkMode }) => {
             <Pencil size={16} />
             textshare/{noteUrl}
           </button>
-          <div className="flex gap-4 mt-4 md:mt-0">
+          <div className='flex gap-4 mt-4 md:mt-0'>
             <button
               onClick={handleCopyContent}
               className={`flex items-center gap-1 px-4 py-2 text-sm font-semibold rounded-lg ${
@@ -176,8 +182,8 @@ const NoteEditor = ({ isDarkMode }) => {
 
         <ReactQuill
           value={content}
-          onChange={(value) => setContent(value)}
-          theme="snow"
+          onChange={value => setContent(value)}
+          theme='snow'
           className={`h-full w-full rounded-lg shadow-md ${
             isDarkMode
               ? 'bg-gray-900 text-white'
@@ -187,12 +193,12 @@ const NoteEditor = ({ isDarkMode }) => {
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-4 text-center bg-opacity-80 backdrop-blur-md">
-        <p className="text-sm">
+      <footer className='w-full py-4 text-center bg-opacity-80 backdrop-blur-md'>
+        <p className='text-sm'>
           Built with ❤️ by{' '}
           <a
-            className="underline"
-            href="https://github.com/deepakisdemigod/"
+            className='underline'
+            href='https://github.com/deepakisdemigod/'
           >
             <span>@deepakisdemigod</span>
           </a>
