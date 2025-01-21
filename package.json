@@ -12,9 +12,11 @@
   "dependencies": {
     "@ant-design/icons": "^5.5.2",
     "@udecode/slate-plugins": "^0.75.2",
-    "antd": "^5.23.0",
+    "antd": "^5.23.2",
     "axios": "^1.7.9",
+    "draft-js": "^0.11.7",
     "flowbite-react": "^0.10.2",
+    "lucide-react": "^0.473.0",
     "phosphor-react": "^1.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

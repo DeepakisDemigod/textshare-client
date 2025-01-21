@@ -5,3 +5,10 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  font-family: 'Inter', Sans-Serif;
+}
+
+.name {
+  font-family: 'Caveat', serif;
+}

@@ -5,36 +5,37 @@ import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import {
-  Pencil,
-  ClipboardText,
-  Share,
-  FloppyDisk,
-  CloudCheck,
-  CloudSlash
-} from 'phosphor-react';
+  Link,
+  Copy,
+  Share2,
+  Save,
+  CheckCircle,
+  AlertCircle,
+  Github
+} from 'lucide-react';
 
-const AUTOSAVE_INTERVAL = 10000; // 10 seconds for autosave
+const AUTOSAVE_INTERVAL = 10000;
 
 const NoteEditor = ({ isDarkMode }) => {
   const { noteUrl } = useParams();
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('saved'); // 'saved', 'saving', 'error'
   const socket = io('https://textshare-server.onrender.com');
   const autosaveTimer = useRef(null);
 
   useEffect(() => {
-    // Join the room
-    socket.emit('join-room', noteUrl);
+    // Set the document title
+    document.title = `textshare/${noteUrl} `;
+  }, []);
 
-    // Receive updates
+  useEffect(() => {
+    socket.emit('join-room', noteUrl);
     socket.on('receive-update', updatedContent => {
       setContent(updatedContent);
     });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [noteUrl, socket]);
+    return () => socket.disconnect();
+  }, [noteUrl]);
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -45,6 +46,7 @@ const NoteEditor = ({ isDarkMode }) => {
         setContent(response.data.content || '');
       } catch (error) {
         console.error('Error fetching note:', error);
+        setSaveStatus('error');
       }
     };
     fetchNote();
@@ -52,34 +54,44 @@ const NoteEditor = ({ isDarkMode }) => {
 
   useEffect(() => {
     const autosave = async () => {
+      if (!content) return;
+
       try {
         setSaving(true);
-        await axios.post(`https://textshare-server.onrender.com/api/notes/${noteUrl}`, {
-          content
-        });
-        console.log('Note autosaved!');
+        setSaveStatus('saving');
+        await axios.post(
+          `https://textshare-server.onrender.com/api/notes/${noteUrl}`,
+          {
+            content
+          }
+        );
+        setSaveStatus('saved');
       } catch (error) {
         console.error('Error during autosave:', error);
+        setSaveStatus('error');
       } finally {
         setSaving(false);
       }
     };
 
     autosaveTimer.current = setInterval(autosave, AUTOSAVE_INTERVAL);
-
-    return () => {
-      clearInterval(autosaveTimer.current);
-    };
+    return () => clearInterval(autosaveTimer.current);
   }, [noteUrl, content]);
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveStatus('saving');
     try {
-      await axios.post(`https://textshare-server.onrender.com/api/notes/${noteUrl}`, {
-        content
-      });
+      await axios.post(
+        `https://textshare-server.onrender.com/api/notes/${noteUrl}`,
+        {
+          content
+        }
+      );
+      setSaveStatus('saved');
     } catch (error) {
       console.error('Error saving note:', error);
+      setSaveStatus('error');
     } finally {
       setSaving(false);
     }
@@ -91,118 +103,176 @@ const NoteEditor = ({ isDarkMode }) => {
   };
 
   const handleShareLink = () => {
-    const shareLink = `${window.location.origin}/${noteUrl}`;
-    navigator.clipboard.writeText(shareLink);
+    navigator.clipboard.writeText(`${window.location.origin}/${noteUrl}`);
   };
 
   return (
     <div
       className={`h-screen flex flex-col ${
-        isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'
+        isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-black'
       }`}
     >
       {/* Header */}
-      <header className='w-full px-6 py-4 flex justify-between items-center bg-opacity-80 backdrop-blur-md'>
-        <h1 className='text-2xl font-bold'>
-          <span className='text-blue-500'>Text</span>Share
-        </h1>
-        <div className='text-sm flex items-center gap-2'>
-          {saving ? (
-            <>
-              <CloudSlash
-                size={24}
-                className='text-yellow-500'
-              />
-              Saving...
-            </>
-          ) : (
-            <>
-              <CloudCheck
-                size={24}
-                className='text-green-500'
-              />
-              All changes saved.
-            </>
-          )}
+      <header
+        className={`sticky top-0 z-50 w-full ${
+          isDarkMode
+            ? 'bg-gray-900 border-gray-700'
+            : 'bg-white border-gray-200'
+        }`}
+      >
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='h-16 flex items-center justify-between'>
+            <div className='flex items-center space-x-4'>
+              <a href='/'>
+                <h1 className='text-2xl font-bold'>
+                  <span className='text-blue-500'>Text</span>Share
+                </h1>
+              </a>
+            </div>
+
+            <div className='flex items-center space-x-2'>
+              {saveStatus === 'saving' && (
+                <div
+                  className={`gap-1 flex items-center ${
+                    isDarkMode ? 'text-amber-400' : 'text-amber-600'
+                  }`}
+                >
+                  <AlertCircle className='w-4 h-4 mr-1.5' />
+                  <span className='text-sm'>Saving...</span>
+                </div>
+              )}
+              {saveStatus === 'saved' && (
+                <div
+                  className={`gap-1 flex items-center ${
+                    isDarkMode ? 'text-green-400' : 'text-green-600'
+                  }`}
+                >
+                  <CheckCircle className='w-4 h-4 mr-1.5' />
+                  <span
+                    className={`text-sm ${
+                      isDarkMode ? 'text-white' : 'text-gray-900'
+                    }`}
+                  >
+                    All changes saved
+                  </span>
+                </div>
+              )}
+              {saveStatus === 'error' && (
+                <div
+                  className={`gap-1 flex items-center ${
+                    isDarkMode ? 'text-red-400' : 'text-red-600'
+                  }`}
+                >
+                  <AlertCircle className='w-4 h-4 mr-1.5' />
+                  <span className='text-sm'>Save failed</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Main Editor */}
-      <main className='flex-1 flex flex-col px-6 py-4'>
-        <div className='flex flex-col md:flex-row justify-between items-center mb-6'>
-          <button
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
-              isDarkMode
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            <Pencil size={16} />
-            textshare/{noteUrl}
-          </button>
-          <div className='flex gap-4 mt-4 md:mt-0'>
-            <button
-              onClick={handleCopyContent}
-              className={`flex items-center gap-1 px-4 py-2 text-sm font-semibold rounded-lg ${
+      {/* Toolbar */}
+      <div
+        className={`w-full ${
+          isDarkMode
+            ? 'bg-gray-900 border-gray-700'
+            : 'bg-white border-gray-200'
+        }`}
+      >
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='h-14 flex items-center justify-end space-x-3'>
+            <div
+              className={`flex sm:flex items-center px-3 py-1.5 rounded-md ${
                 isDarkMode
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+                  ? 'bg-gray-700 text-gray-300'
+                  : 'bg-gray-100 text-gray-600'
               }`}
             >
-              <ClipboardText size={16} />
+              <Link className='w-4 h-4 text-gray-500 mr-1' />
+              <span className='text-sm font-medium'>{noteUrl}</span>
+            </div>
+
+            <button
+              onClick={handleCopyContent}
+              className={`gap-1 inline-flex items-center px-3 py-1.5 text-sm font-medium ${
+                isDarkMode
+                  ? 'text-gray-300 bg-gray-800 hover:bg-gray-600'
+                  : 'text-gray-700 bg-white hover:bg-gray-50'
+              } border rounded-md`}
+            >
+              <Copy className='w-4 h-4 mr-1.5' />
               Copy
             </button>
             <button
               onClick={handleShareLink}
-              className={`flex items-center gap-1 px-4 py-2 text-sm font-semibold rounded-lg ${
+              className={`gap-1 inline-flex items-center px-3 py-1.5 text-sm font-medium ${
                 isDarkMode
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : 'bg-green-500 hover:bg-green-600 text-white'
-              }`}
+                  ? 'text-gray-300 bg-gray-800 hover:bg-gray-600'
+                  : 'text-gray-700 bg-white hover:bg-gray-50'
+              } border rounded-md`}
             >
-              <Share size={16} />
+              <Share2 className='w-4 h-4 mr-1.5' />
               Share
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className={`flex items-center gap-1 px-4 py-2 text-sm font-semibold rounded-lg ${
-                saving
-                  ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                  : isDarkMode
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-blue-500 hover:bg-blue-600 text-white'
-              }`}
+              className={`gap-1 inline-flex items-center px-3 py-1.5 text-sm font-medium ${
+                isDarkMode
+                  ? 'text-white bg-blue-600 hover:bg-blue-400'
+                  : 'text-white bg-blue-600 hover:bg-blue-600'
+              } rounded-md disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <FloppyDisk size={16} />
+              <Save className='w-4 h-4 mr-1.5' />
               Save
             </button>
           </div>
         </div>
+      </div>
 
-        <ReactQuill
-          value={content}
-          onChange={value => setContent(value)}
-          theme='snow'
-          className={`h-full w-full rounded-lg shadow-md ${
-            isDarkMode
-              ? 'bg-gray-900 text-white'
-              : 'bg-white text-black border-gray-300'
+      {/* Editor */}
+      <main className='flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6'>
+        <div
+          className={` w-full rounded-lg shadow-sm ${
+            isDarkMode ? 'bg-gray-900' : 'bg-white'
           }`}
-        />
+        >
+          <ReactQuill
+            value={content}
+            onChange={value => setContent(value)}
+            theme='snow'
+            className={`h-[calc(100vh-16rem)]${
+              isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'
+            }`}
+          />
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className='w-full py-4 text-center bg-opacity-80 backdrop-blur-md'>
-        <p className='text-sm'>
-          Built with ❤️ by{' '}
-          <a
-            className='underline'
-            href='https://github.com/deepakisdemigod/'
-          >
-            <span>@deepakisdemigod</span>
-          </a>
-        </p>
+      <footer
+        className={`w-full ${
+          isDarkMode ? 'bg-gray-900 text-gray-400' : 'bg-white text-gray-500'
+        } border-t`}
+      >
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4'>
+          <p className='text-sm text-center flex items-center justify-center'>
+            Built with ❤️ by
+            <a
+              href='https://github.com/deepakisdemigod/'
+              target='_blank'
+              rel='noopener noreferrer'
+              className={`ml-1 inline-flex items-center ${
+                isDarkMode
+                  ? 'text-gray-300 hover:text-white'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Github className='w-4 h-4 mr-1' />
+              @deepakisdemigod
+            </a>
+          </p>
+        </div>
       </footer>
     </div>
   );
