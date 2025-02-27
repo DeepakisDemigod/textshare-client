@@ -6,9 +6,7 @@
 @tailwind utilities;
 
 * {
-  font-family: 'Inter', Sans-Serif;
+  font-family: 'Gabarito', Sans-Serif;
 }
 
-.name {
-  font-family: 'Caveat', serif;
-}
+
