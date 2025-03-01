@@ -155,7 +155,7 @@ const NoteEditor = ({ isDarkMode }) => {
             <div className="flex items-center space-x-4">
               <a href="/">
                 <h1 className="text-2xl font-bold">
-                  <span className="text-blue-500">Text</span>Share
+                  <span className="text-yellow-500">Text</span>Share
                 </h1>
               </a>
             </div>
@@ -196,14 +196,14 @@ const NoteEditor = ({ isDarkMode }) => {
 
             <button
               onClick={handleCopyContent}
-              className="gap-1 inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border rounded-md"
+              className="gap-1 inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white hover:bg-yellow-500 hover:text-white border rounded-md cursor-pointer"
             >
               <Copy className="w-4 h-4 mr-1.5" />
               Copy
             </button>
             <button
               onClick={handleShareLink}
-              className="gap-1 inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-600 text-gray-700 bg-white hover:bg-gray-50"
+              className="gap-1 inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-300 bg-gray-800 text-gray-700 bg-white border rounded-md hover:bg-yellow-500 hover:text-white cursor-pointer"
             >
               <Share2 className="w-4 h-4 mr-1.5" />
               Share
@@ -211,7 +211,7 @@ const NoteEditor = ({ isDarkMode }) => {
             <button
               onClick={handleSave}
               disabled={saving || loading}
-              className="gap-1 inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-600 rounded-md disabled:opacity-10 disabled:cursor-not-allowed"
+              className="gap-1 inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md disabled:opacity-10 disabled:cursor-not-allowed cursor-pointer"
             >
               <Save className="w-4 h-4 mr-1.5" />
               Save
