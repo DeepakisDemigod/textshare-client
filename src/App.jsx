@@ -52,6 +52,11 @@ const Home = ({ isDarkMode, toggleTheme }) => {
           <h1 className="text-2xl font-bold text-white">
             <span className="text-yellow-300">Text</span>Share
           </h1>
+          <a href="mailto:deepakthapa1423@gmail.com?subject=Feedback%20for%20TextShare%20Tool&body=I%20would%20Like%20to%20have%20a%20Feature...">
+            <button className="btn bg-yellow-400 text-white rounded-md px-4 py-2 font-semibold">
+              Feedback
+            </button>
+          </a>
         </header>
 
         <main className="flex-1 flex flex-col items-center justify-center px-4 text-center">
